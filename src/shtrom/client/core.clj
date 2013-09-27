@@ -27,3 +27,14 @@
              (.position 0))]
     (map (fn [_] (.getInt bb))
          (range (quot len 4)))))
+
+(defn save-hist
+  [key ref binsize values]
+  (let [len (* 4 (count values))
+        bb (doto (gen-byte-buffer len)
+             (.limit len))]
+    (doseq [v values]
+      (.putInt bb v))
+    (.position bb 0)
+    (client/post (hist-uri key ref binsize)
+                 {:body (.array bb)})))
