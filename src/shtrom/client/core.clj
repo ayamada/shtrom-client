@@ -15,18 +15,20 @@
 
 (defn load-hist
   [key ref binsize start end]
-  (let [res (client/get (hist-uri key ref binsize)
-                     {:query-params {:start start :end end}
-                      :as :byte-array})
-        len (-> (get (:headers res) "content-length")
-                str->int)
-        bytes (:body res)
-        bb (doto (gen-byte-buffer len)
-             (.limit len)
-             (.put bytes 0 len)
-             (.position 0))]
-    (map (fn [_] (.getInt bb))
-         (range (quot len 4)))))
+  (try
+    (let [res (client/get (hist-uri key ref binsize)
+                          {:query-params {:start (long start) :end (long end)}
+                           :as :byte-array})
+          len (-> (get (:headers res) "content-length")
+                  str->int)
+          bytes (:body res)
+          bb (doto (gen-byte-buffer len)
+               (.limit len)
+               (.put bytes 0 len)
+               (.position 0))]
+      (map (fn [_] (.getInt bb))
+           (range (quot len 4))))
+    (catch Exception e [])))
 
 (defn save-hist
   [key ref binsize values]
