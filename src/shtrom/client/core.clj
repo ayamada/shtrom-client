@@ -38,3 +38,7 @@
     (.position bb 0)
     (client/post (hist-uri key ref binsize)
                  {:body (.array bb)})))
+
+(defn reduce-hist
+  [key ref binsize]
+  (client/post (str (hist-uri key ref binsize) "/reduction")))
