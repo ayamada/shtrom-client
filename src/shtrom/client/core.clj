@@ -13,11 +13,18 @@
   [key ref binsize]
   (format "%s/%s/%s/%d" uri-root key ref binsize))
 
+(defn- validate-position
+  [val]
+  (if (neg? val)
+    (long 0)
+    (long val)))
+
 (defn load-hist
   [key ref binsize start end]
   (try
     (let [res (client/get (hist-uri key ref binsize)
-                          {:query-params {:start (long start) :end (long end)}
+                          {:query-params {:start (validate-position start)
+                                          :end (validate-position end)}
                            :as :byte-array})
           len (-> (get (:headers res) "content-length")
                   str->int)
@@ -25,10 +32,13 @@
           bb (doto (gen-byte-buffer len)
                (.limit len)
                (.put bytes 0 len)
-               (.position 0))]
-      (map (fn [_] (.getInt bb))
-           (range (quot len 4))))
-    (catch Exception e [])))
+               (.position 0))
+          left (.getLong bb)
+          right (.getLong bb)
+          values (map (fn [_] (.getInt bb))
+                      (range (quot (- len 16) 4)))]
+      [left right values])
+    (catch Exception e [0 0 (list)])))
 
 (defn save-hist
   [key ref binsize values]
