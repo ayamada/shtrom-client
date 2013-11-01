@@ -1,13 +1,21 @@
 (ns shtrom.client.core
-  (:require [clj-http.client :as client]
+  (:require [clojure.java.io :as io]
+            [clj-http.client :as client]
             [shtrom.client.util :refer [gen-byte-buffer str->int]]))
 
 (declare uri-root)
 
-(defn init
-  []
-  (let [config (read-string (slurp "config/shtrom-client.config.clj"))]
-    (def uri-root (:uri-root config))))
+(def ^:private default-config-filename "shtrom-client.config.clj")
+
+(defn shtrom-init
+  ([]
+     (shtrom-init default-config-filename))
+  ([f]
+     (let [rsrc (io/resource f)
+           conf (if (nil? rsrc)
+                  (throw (RuntimeException. (str "Configuration file not found: " f)))
+                  (slurp rsrc))]
+       (def uri-root (:uri-root config)))))
 
 (defn hist-uri
   [key ref binsize]
