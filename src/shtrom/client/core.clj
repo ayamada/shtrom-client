@@ -15,7 +15,7 @@
            conf (if (nil? rsrc)
                   (throw (RuntimeException. (str "Configuration file not found: " f)))
                   (slurp rsrc))]
-       (def uri-root (:uri-root config)))))
+       (def uri-root (:uri-root conf)))))
 
 (defn hist-uri
   [key ref binsize]
