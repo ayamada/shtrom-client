@@ -14,7 +14,7 @@
      (let [rsrc (io/resource f)
            conf (if (nil? rsrc)
                   (throw (RuntimeException. (str "Configuration file not found: " f)))
-                  (slurp rsrc))]
+                  (read-string (slurp rsrc)))]
        (def uri-root (:uri-root conf)))))
 
 (defn hist-uri
