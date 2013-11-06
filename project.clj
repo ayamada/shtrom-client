@@ -6,4 +6,8 @@
   :repositories [["snapshots" {:url "https://nexus.xcoo.jp/content/repositories/snapshots"}]
                  ["releases" {:url "https://nexus.xcoo.jp/content/repositories/releases"}]]
   :dependencies [[org.clojure/clojure "1.5.1"]
-                 [clj-http "0.7.7"]])
+                 [org.clojure/tools.logging "0.2.6"]
+                 [clj-http "0.7.7"]]
+  :plugins [[lein-midje "3.1.1"]]
+  :profiles {:dev {:dependencies [[midje "1.5.1"]]}}
+  :jar-exclusions [#".+?\.config\.clj"])
