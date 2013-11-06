@@ -1,5 +1,6 @@
 (ns shtrom.client.core
   (:require [clojure.java.io :as io]
+            [clojure.tools.logging :as logging]
             [clj-http.client :as client]
             [shtrom.client.util :refer [gen-byte-buffer str->int]]))
 
@@ -46,6 +47,9 @@
           values (map (fn [_] (.getInt bb))
                       (range (quot (- len 16) 4)))]
       [left right values])
+    (catch java.net.ConnectException e
+      (logging/warn "Lost shtrom connection")
+      nil)
     (catch Exception e [0 0 (list)])))
 
 (defn save-hist
@@ -56,9 +60,17 @@
     (doseq [v values]
       (.putInt bb v))
     (.position bb 0)
-    (client/post (hist-uri key ref binsize)
-                 {:body (.array bb)})))
+    (try
+      (client/post (hist-uri key ref binsize)
+                   {:body (.array bb)})
+      (catch java.net.ConnectException e
+        (logging/warn "Lost shtrom connection")
+        nil))))
 
 (defn reduce-hist
   [key ref binsize]
-  (client/post (str (hist-uri key ref binsize) "/reduction")))
+  (try
+    (client/post (str (hist-uri key ref binsize) "/reduction"))
+    (catch java.net.ConnectException e
+      (logging/warn "Lost shtrom connection")
+      nil)))
