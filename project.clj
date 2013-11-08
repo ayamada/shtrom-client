@@ -7,7 +7,7 @@
                  ["releases" {:url "https://nexus.xcoo.jp/content/repositories/releases"}]]
   :dependencies [[org.clojure/clojure "1.5.1"]
                  [org.clojure/tools.logging "0.2.6"]
-                 [clj-http "0.7.7"]]
+                 [aleph "0.3.0"]]
   :plugins [[lein-midje "3.1.1"]]
   :profiles {:dev {:dependencies [[midje "1.5.1"]]}}
   :jar-exclusions [#".+?\.config\.clj"])

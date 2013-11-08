@@ -41,6 +41,7 @@
         (core/reduce-hist key r s)))
     refs))
   nil)
+
 (with-state-changes [(before :facts (test-shtrom-init))]
   (fact "save/load/reduce histogram"
         (core/save-hist test-key test-ref test-bin-size []) => (throws RuntimeException "Empty values")
