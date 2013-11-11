@@ -49,8 +49,10 @@
         (core/load-hist "not" "found" test-bin-size 0 256) => [0 0 (list)]
         (core/load-hist test-key test-ref test-bin-size 0 256) => [0 256 test-values]
         (core/reduce-hist "not" "found" test-bin-size) => (throws RuntimeException #"Invalid key, ref or bin-size")
-        (core/reduce-hist test-key test-ref test-bin-size) => nil))
+        (core/reduce-hist test-key test-ref test-bin-size) => nil
+        (core/delete-hist test-key) => nil))
 
 (with-state-changes [(before :facts (test-shtrom-init))]
   (fact "concurrently reduce histogram"
-        (concurrent-reduce test-key long-test-refs test-bin-size long-test-values) => nil))
+        (concurrent-reduce test-key long-test-refs test-bin-size long-test-values) => nil
+        (core/delete-hist test-key) => nil))

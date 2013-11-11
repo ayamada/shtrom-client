@@ -19,8 +19,10 @@
        (def uri-root (:uri-root conf)))))
 
 (defn hist-uri
-  [key ref bin-size]
-  (format "%s/%s/%s/%d" uri-root key ref bin-size))
+  ([key]
+     (format "%s/%s" uri-root key))
+  ([key ref bin-size]
+     (format "%s/%s/%s/%d" uri-root key ref bin-size)))
 
 (defn- validate-position
   [val]
@@ -80,6 +82,15 @@
                               :method :post})]
       (cond
        (= (:status res) 404) (throw (RuntimeException. (format "Invalid key, ref or bin-size: %s %s %d" key ref bin-size)))))
+    (catch java.net.ConnectException e
+      (logging/error "Lost shtrom connection")))
+  nil)
+
+(defn delete-hist
+  [key]
+  (try
+    @(http-request {:url (hist-uri key)
+                    :method :delete})
     (catch java.net.ConnectException e
       (logging/error "Lost shtrom connection")))
   nil)
