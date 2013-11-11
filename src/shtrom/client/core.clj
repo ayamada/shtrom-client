@@ -50,7 +50,7 @@
                       (range (quot (- len 16) 4)))]
       [left right values])
     (catch java.net.ConnectException e
-      (logging/warn "Lost shtrom connection")
+      (logging/error "Lost shtrom connection")
       nil)
     (catch Exception e [0 0 (list)])))
 
@@ -69,7 +69,7 @@
                       :method :post
                       :body (.array bb)})
       (catch java.net.ConnectException e
-        (logging/warn "Lost shtrom connection")
+        (logging/error "Lost shtrom connection")
         nil))
     nil))
 
@@ -81,5 +81,5 @@
       (cond
        (= (:status res) 404) (throw (RuntimeException. (format "Invalid key, ref or bin-size: %s %s %d" key ref bin-size)))))
     (catch java.net.ConnectException e
-      (logging/warn "Lost shtrom connection")))
+      (logging/error "Lost shtrom connection")))
   nil)
