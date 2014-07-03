@@ -1,4 +1,4 @@
-(ns shtrom.client.core
+(ns shtrom.client
   (:require [clojure.java.io :as io]
             [clojure.tools.logging :as logging]
             [aleph.http :refer [http-request]]
@@ -16,7 +16,7 @@
            conf (if (nil? rsrc)
                   (throw (RuntimeException. (str "Configuration file not found: " f)))
                   (read-string (slurp rsrc)))]
-       (def uri-root (:uri-root conf)))))
+       (intern 'shtrom.client 'uri-root (:uri-root conf)))))
 
 (defn hist-uri
   ([key]
