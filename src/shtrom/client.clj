@@ -1,8 +1,9 @@
 (ns shtrom.client
   (:require [clojure.java.io :as io]
             [clojure.tools.logging :as logging]
-            [aleph.http :refer [http-request]]
-            [shtrom.client.util :refer [gen-byte-buffer str->int]]))
+            [clj-http.lite.client :as client]
+            [shtrom.client.util :refer [gen-byte-buffer str->int]])
+  (:import [java.nio ByteBuffer]))
 
 (declare uri-root)
 
@@ -33,19 +34,14 @@
 (defn load-hist
   [key ref bin-size start end]
   (try
-    (let [res @(http-request {:url (format "%s?start=%d&end=%d"
-                                           (hist-uri key ref bin-size)
-                                           (validate-position start)
-                                           (validate-position end))
-                              :method :get})
-          len (-> (:headers res)
-                  (get "content-length")
-                  str->int)
-          bytes (.array (:body res))
-          bb (doto (gen-byte-buffer len)
-               (.limit len)
-               (.put bytes 0 len)
-               (.position 0))
+    (let [res (client/get (hist-uri key ref bin-size)
+                          {:query-params {:start (validate-position start)
+                                          :end (validate-position end)}
+                           :as :byte-array
+                           :accept :byte-array})
+          len (alength (:body res))
+          bb (when res
+               (ByteBuffer/wrap (:body res)))
           left (.getLong bb)
           right (.getLong bb)
           values (map (fn [_] (.getInt bb))
@@ -67,9 +63,9 @@
       (.putInt bb v))
     (.position bb 0)
     (try
-      @(http-request {:url (hist-uri key ref bin-size)
-                      :method :post
-                      :body (.array bb)})
+      (client/post (hist-uri key ref bin-size)
+                   {:body (.array bb)
+                    :content-type "application/octet-stream"})
       (catch java.net.ConnectException e
         (logging/error "Lost shtrom connection")
         nil))
@@ -78,8 +74,8 @@
 (defn reduce-hist
   [key ref bin-size]
   (try
-    (let [res @(http-request {:url (str (hist-uri key ref bin-size) "/reduction")
-                              :method :post})]
+    (let [res (client/post (str (hist-uri key ref bin-size) "/reduction")
+                           {:throw-exceptions false})]
       (cond
        (= (:status res) 404) (throw (RuntimeException. (format "Invalid key, ref or bin-size: %s %s %d" key ref bin-size)))))
     (catch java.net.ConnectException e
@@ -89,8 +85,7 @@
 (defn delete-hist
   [key]
   (try
-    @(http-request {:url (hist-uri key)
-                    :method :delete})
+    (client/delete (hist-uri key))
     (catch java.net.ConnectException e
       (logging/error "Lost shtrom connection")))
   nil)

@@ -1,6 +1,6 @@
-(ns shtrom.client.t-core
+(ns shtrom.t-client
   (:use [midje.sweet])
-  (:require [shtrom.client.core :as core]))
+  (:require [shtrom.client :as client]))
 
 (def test-key "0")
 (def test-ref "test")
@@ -9,7 +9,7 @@
 
 (defn test-shtrom-init
   []
-  (core/shtrom-init "test.shtrom-client.config.clj"))
+  (client/shtrom-init "test.shtrom-client.config.clj"))
 
 (def long-test-refs ["test-long-a" "test-long-b" "test-long-c" "test-long-d" "test-long-e" "test-long-f" "test-long-g" "test-long-h"])
 (def max-value 128)
@@ -33,26 +33,26 @@
 (defn concurrent-reduce
   [key refs bin-size initial-values]
   (doseq [r refs]
-    (core/save-hist key r bin-size initial-values))
+    (client/save-hist key r bin-size initial-values))
   (doall
    (pmap
     (fn [r]
       (doseq [s bin-sizes]
-        (core/reduce-hist key r s)))
+        (client/reduce-hist key r s)))
     refs))
   nil)
 
 (with-state-changes [(before :facts (test-shtrom-init))]
   (fact "save/load/reduce histogram"
-    (core/save-hist test-key test-ref test-bin-size []) => (throws RuntimeException "Empty values")
-    (core/save-hist test-key test-ref test-bin-size test-values) => nil
-    (core/load-hist "not" "found" test-bin-size 0 256) => [0 0 (list)]
-    (core/load-hist test-key test-ref test-bin-size 0 256) => [0 256 test-values]
-    (core/reduce-hist "not" "found" test-bin-size) => (throws RuntimeException #"Invalid key, ref or bin-size")
-    (core/reduce-hist test-key test-ref test-bin-size) => nil
-    (core/delete-hist test-key) => nil))
+    (client/save-hist test-key test-ref test-bin-size []) => (throws RuntimeException "Empty values")
+    (client/save-hist test-key test-ref test-bin-size test-values) => nil
+    (client/load-hist "not" "found" test-bin-size 0 256) => [0 0 (list)]
+    (client/load-hist test-key test-ref test-bin-size 0 256) => [0 256 test-values]
+    (client/reduce-hist "not" "found" test-bin-size) => (throws RuntimeException #"Invalid key, ref or bin-size")
+    (client/reduce-hist test-key test-ref test-bin-size) => nil
+    (client/delete-hist test-key) => nil))
 
 (with-state-changes [(before :facts (test-shtrom-init))]
   (fact "concurrently reduce histogram"
     (concurrent-reduce test-key long-test-refs test-bin-size long-test-values) => nil
-    (core/delete-hist test-key) => nil))
+    (client/delete-hist test-key) => nil))
