@@ -5,7 +5,7 @@
             [shtrom.client.util :refer [gen-byte-buffer str->int]])
   (:import [java.nio ByteBuffer]))
 
-(declare uri-root)
+(declare host port uri-root)
 
 (def ^:private default-config-filename "shtrom-client.config.clj")
 
@@ -17,7 +17,9 @@
            conf (if (nil? rsrc)
                   (throw (RuntimeException. (str "Configuration file not found: " f)))
                   (read-string (slurp rsrc)))]
-       (intern 'shtrom.client 'uri-root (:uri-root conf)))))
+       (intern 'shtrom.client 'host (:host conf))
+       (intern 'shtrom.client 'port (:port conf))
+       (intern 'shtrom.client 'uri-root (str "http://" (:host conf) ":" (:port conf))))))
 
 (defn hist-uri
   ([key]

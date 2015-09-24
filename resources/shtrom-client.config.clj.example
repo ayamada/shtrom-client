@@ -1,1 +1,2 @@
-{:uri-root "http://localhost:3001"}
+{:host "localhost"
+ :port 3001}
