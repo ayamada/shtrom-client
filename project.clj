@@ -5,7 +5,7 @@
             :url "http://www.apache.org/licenses/LICENSE-2.0.html"}
   :dependencies [[org.clojure/clojure "1.6.0"]
                  [org.clojure/tools.logging "0.3.1"]
-                 [clj-http-lite "0.2.0"]]
-  :plugins [[lein-midje "3.1.3"]]
-  :profiles {:dev {:dependencies [[midje "1.6.3"]]}}
+                 [clj-http-lite "0.3.0"]]
+  :plugins [[lein-midje "3.2"]]
+  :profiles {:dev {:dependencies [[midje "1.8.3"]]}}
   :jar-exclusions [#".+?\.config\.clj"])
