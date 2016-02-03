@@ -27,7 +27,7 @@
   ([key ref bin-size]
      (format "%s/%s/%s/%d" uri-root key ref bin-size)))
 
-(defn- validate-position
+(defn validate-position
   [val]
   (if (neg? val)
     (long 0)

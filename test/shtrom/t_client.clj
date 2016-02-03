@@ -1,58 +1,36 @@
 (ns shtrom.t-client
-  (:use [midje.sweet])
-  (:require [shtrom.client :as client]))
+  (:require [midje.sweet :refer :all]
+            [shtrom.client :as client])
+  (:import [java.io StringWriter]))
 
-(def test-key "0")
-(def test-ref "test")
-(def test-bin-size 64)
-(def test-values [345 127 493 312])
+(fact "validate-position"
+  (client/validate-position nil) => (throws Throwable)
+  (client/validate-position 0) => 0
+  (client/validate-position 1) => 1
+  (client/validate-position -1) => 0
+  (client/validate-position 99999) => 99999
+  (client/validate-position -99999) => 0
+  (instance? Long (client/validate-position 123)) => truthy)
 
-(defn test-shtrom-init
-  []
-  (client/shtrom-init "test.shtrom-client.config.clj"))
+(fact "shtrom-init"
+  (client/shtrom-init "test.config.clj") => anything
+  client/host => "localhost"
+  client/port => 13001
+  client/uri-root => "http://localhost:13001")
 
-(def long-test-refs ["test-long-a" "test-long-b" "test-long-c" "test-long-d" "test-long-e" "test-long-f" "test-long-g" "test-long-h"])
-(def max-value 128)
-(def long-test-values (take 100000 (repeatedly #(rand-int max-value))))
+(with-state-changes [(before :facts (client/shtrom-init "test.config.clj"))]
+  (fact "hist-uri"
+    (client/hist-uri "test-key") => "http://localhost:13001/test-key"
+    (client/hist-uri "test-key" "test-ref" 64) => "http://localhost:13001/test-key/test-ref/64")
+  (fact "load-hist"
+    (client/load-hist "test-key" "test-ref" 64 0 128) => nil)
+  (fact "save-hist"
+    (client/save-hist "test-key" "test-ref" 64 []) => (throws RuntimeException)
+    (client/save-hist "test-key" "test-ref" 64 [0 1 2 3]) => nil)
+  (fact "reduce-hist"
+    (client/reduce-hist "test-key" "test-ref" 64) => nil)
+  (fact "delete-hist"
+    (client/delete-hist "test-key") => nil))
 
-(def ^:private bin-sizes [64
-                          128
-                          256
-                          512
-                          1024
-                          2048
-                          4096
-                          8192
-                          16384
-                          32768
-                          65536
-                          131072
-                          262144
-                          524288])
-
-(defn concurrent-reduce
-  [key refs bin-size initial-values]
-  (doseq [r refs]
-    (client/save-hist key r bin-size initial-values))
-  (doall
-   (pmap
-    (fn [r]
-      (doseq [s bin-sizes]
-        (client/reduce-hist key r s)))
-    refs))
-  nil)
-
-(with-state-changes [(before :facts (test-shtrom-init))]
-  (fact "save/load/reduce histogram"
-    (client/save-hist test-key test-ref test-bin-size []) => (throws RuntimeException "Empty values")
-    (client/save-hist test-key test-ref test-bin-size test-values) => nil
-    (client/load-hist "not" "found" test-bin-size 0 256) => [0 0 (list)]
-    (client/load-hist test-key test-ref test-bin-size 0 256) => [0 256 test-values]
-    (client/reduce-hist "not" "found" test-bin-size) => (throws RuntimeException #"Invalid key, ref or bin-size")
-    (client/reduce-hist test-key test-ref test-bin-size) => nil
-    (client/delete-hist test-key) => nil))
-
-(with-state-changes [(before :facts (test-shtrom-init))]
-  (fact "concurrently reduce histogram"
-    (concurrent-reduce test-key long-test-refs test-bin-size long-test-values) => nil
-    (client/delete-hist test-key) => nil))
+;;; More tests (must need shtrom server) were moved to
+;;; https://github.com/chrovis/shtrom
