@@ -6,7 +6,8 @@
   :dependencies [[org.clojure/clojure "1.6.0"]
                  [org.clojure/tools.logging "0.3.1"]
                  [clj-http-lite "0.3.0"]]
-  :profiles {:test {:dependencies [[midje "1.8.3"]]
+  :profiles {:test {:resource-paths ["test-resources"]
+                    :dependencies [[midje "1.8.3"]]
                     :plugins [[lein-cloverage "1.0.6"]
                               [lein-midje "3.2"]]}}
   :jar-exclusions [#".+?\.config\.clj"])
