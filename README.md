@@ -6,6 +6,15 @@ A client library for shtrom (a histogram data store that is specialized for shor
 
 FIXME
 
+## Test
+
+`lein with-profile +test midje`
+
+## Get a coverage
+
+`lein with-profile +test cloverage`
+and open `target/coverage/index.html`
+
 ## License
 
 Copyright 2014 [Xcoo, Inc.][xcoo]
