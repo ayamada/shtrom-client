@@ -1,7 +1,8 @@
 (ns shtrom.t-client
   (:require [midje.sweet :refer :all]
-            [shtrom.client :as client])
-  (:import [java.io StringWriter]))
+            [shtrom.client :as client]))
+
+(def test-config-filename "test.shtrom-client.config.clj")
 
 (fact "validate-position"
   (client/validate-position nil) => (throws Throwable)
@@ -13,12 +14,12 @@
   (instance? Long (client/validate-position 123)) => truthy)
 
 (fact "shtrom-init"
-  (client/shtrom-init "test.config.clj") => anything
+  (client/shtrom-init test-config-filename) => anything
   client/host => "localhost"
   client/port => 13001
   client/uri-root => "http://localhost:13001")
 
-(with-state-changes [(before :facts (client/shtrom-init "test.config.clj"))]
+(with-state-changes [(before :facts (client/shtrom-init test-config-filename))]
   (fact "hist-uri"
     (client/hist-uri "test-key") => "http://localhost:13001/test-key"
     (client/hist-uri "test-key" "test-ref" 64) => "http://localhost:13001/test-key/test-ref/64")
@@ -32,5 +33,4 @@
   (fact "delete-hist"
     (client/delete-hist "test-key") => nil))
 
-;;; More tests (must need shtrom server) were moved to
-;;; https://github.com/chrovis/shtrom
+;;; More tests which required shtrom server are available on <https://github.com/chrovis/shtrom>

@@ -12,14 +12,19 @@ Client library for [shtrom](https://github.com/chrovis/shtrom)
 
 TODO
 
-## Test
+### Run tests
 
-`lein with-profile dev,test midje`
+```
+lein with-profile dev,test midje
+```
 
-## Get a coverage
+### Get coverage
 
-`lein with-profile dev,test cloverage`
-and open `target/coverage/index.html`
+```
+lein with-profile dev,test cloverage
+```
+
+and see `target/coverage/index.html`
 
 ## License
 
