@@ -1,4 +1,4 @@
-(ns shtrom.t-client-with-server
+(ns shtrom.t-server
   (:require [midje.sweet :refer :all]
             [shtrom.t-fixture :refer :all]
             [ring.adapter.jetty :as jetty]
