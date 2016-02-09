@@ -33,4 +33,4 @@
   (fact "delete-hist"
     (client/delete-hist "test-key") => nil))
 
-;;; More tests which required shtrom server are available on <https://github.com/chrovis/shtrom>
+;;; More tests which require "shtrom" server are available on <https://github.com/chrovis/shtrom>
