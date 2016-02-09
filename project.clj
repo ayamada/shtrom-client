@@ -3,11 +3,15 @@
   :url "http://github.com/chrovis/shtrom-client"
   :license {:name "Apache License, Version 2.0"
             :url "http://www.apache.org/licenses/LICENSE-2.0.html"}
-  :dependencies [[org.clojure/clojure "1.6.0"]
-                 [org.clojure/tools.logging "0.3.1"]
+  :dependencies [[org.clojure/tools.logging "0.3.1"]
                  [clj-http-lite "0.3.0"]]
-  :profiles {:test {:resource-paths ["test-resources"]
+  :profiles {:dev {:dependencies [[org.clojure/clojure "1.8.0"]]}
+             :test {:resource-paths ["test-resources"]
                     :dependencies [[midje "1.8.3"]]
                     :plugins [[lein-cloverage "1.0.6"]
-                              [lein-midje "3.2"]]}}
+                              [lein-midje "3.2"]]}
+             :1.5 {:dependencies [[org.clojure/clojure "1.5.0"]]}
+             :1.6 {:dependencies [[org.clojure/clojure "1.6.0"]]}
+             :1.7 {:dependencies [[org.clojure/clojure "1.7.0"]]}
+             :1.8 {:dependencies [[org.clojure/clojure "1.8.0"]]}}
   :jar-exclusions [#".+?\.config\.clj"])
