@@ -7,7 +7,8 @@
                  [clj-http-lite "0.3.0"]]
   :profiles {:dev {:dependencies [[org.clojure/clojure "1.8.0"]]}
              :test {:resource-paths ["test-resources"]
-                    :dependencies [[midje "1.8.3"]]
+                    :dependencies [[midje "1.8.3"]
+                                   [shtrom "0.1.0-SNAPSHOT"]]
                     :plugins [[lein-cloverage "1.0.6"]
                               [lein-midje "3.2"]]}
              :1.5 {:dependencies [[org.clojure/clojure "1.5.0"]]}
