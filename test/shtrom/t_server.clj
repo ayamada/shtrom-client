@@ -43,15 +43,17 @@
                                       (run-server!)))
                      (after :facts (shutdown-server!))]
   (fact "save/load/reduce histogram"
+    (client/create-bucket! client-key)
     (client/save-hist client-key client-ref client-bin-size []) => (throws RuntimeException "Empty values")
     (client/save-hist client-key client-ref client-bin-size client-values) => nil
+    (client/reduce-hist "not" "found" client-bin-size) => (throws RuntimeException #"Invalid key, ref or bin-size")
+    (client/reduce-hist client-key client-ref client-bin-size) => nil
+    (client/build-bucket! client-key)
     (client/load-hist "not" "found" client-bin-size 0 256) => [0 0 (list)]
     (client/load-hist client-key client-ref client-bin-size 0 256) => [0 256 client-values]
     (client/load-hist client-key client-ref client-bin-size -1 256) => [0 256 client-values]
     (client/load-hist client-key client-ref client-bin-size 256 0) => [0 0 (list)]
     (client/load-hist client-key client-ref client-bin-size 1 1) => [0 64 client-values-first]
-    (client/reduce-hist "not" "found" client-bin-size) => (throws RuntimeException #"Invalid key, ref or bin-size")
-    (client/reduce-hist client-key client-ref client-bin-size) => nil
     (client/delete-hist client-key) => nil))
 
 (with-state-changes [(before :facts (do

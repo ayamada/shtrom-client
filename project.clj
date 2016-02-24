@@ -4,7 +4,8 @@
   :license {:name "Apache License, Version 2.0"
             :url "http://www.apache.org/licenses/LICENSE-2.0.html"}
   :dependencies [[org.clojure/tools.logging "0.3.1"]
-                 [clj-http-lite "0.3.0"]]
+                 [clj-http-lite "0.3.0"]
+                 [cheshire "5.5.0"]]
   :profiles {:dev {:dependencies [[org.clojure/clojure "1.8.0"]]}
              :test {:resource-paths ["test-resources"]
                     :dependencies [[midje "1.8.3"]
