@@ -36,7 +36,6 @@
        (if-let [body#
                 (-> e#
                     ex-data
-                    :object
                     :body
                     (as-> x# (when x# (cheshire/parse-string x# true)))
                     (as-> x# (if-let [state# (get-in x# [:error :state])]
