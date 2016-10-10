@@ -1,6 +1,7 @@
 (ns shtrom.t-client
   (:require [midje.sweet :refer :all]
             [shtrom.client :as client]
+            [shtrom.client.config :as config]
             [shtrom.t-fixture :as t-fixture]))
 
 (fact "validate-position"
@@ -17,6 +18,6 @@
 
 (fact "shtrom-init"
   (client/shtrom-init t-fixture/test-client-config-filename) => anything
-  client/host => "localhost"
-  client/port => 13001
-  client/uri-root => "http://localhost:13001")
+  config/host => "localhost"
+  config/port => 13001
+  config/uri-root => "http://localhost:13001")

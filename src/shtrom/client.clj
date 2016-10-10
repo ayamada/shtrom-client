@@ -1,32 +1,40 @@
 (ns shtrom.client
-  (:require [clojure.java.io :as io]
+  (:require [clj-http.client :as client]
+            [clj-http.conn-mgr :as manager]
             [clojure.tools.logging :as logging]
-            [clj-http.lite.client :as client]
             [shtrom.client.util :refer [gen-byte-buffer str->int]]
-            [cheshire.core :as cheshire])
+            [cheshire.core :as cheshire]
+            [shtrom.client.config :as config])
   (:import [java.nio ByteBuffer]))
-
-(declare host port uri-root)
 
 (def ^:private default-config-filename "shtrom-client.config.clj")
 
+(def connection-manager (atom nil))
+
 (defn shtrom-init
   ([]
-     (shtrom-init default-config-filename))
+   (shtrom-init default-config-filename))
   ([f]
-     (let [rsrc (io/resource f)
-           conf (if (nil? rsrc)
-                  (throw (RuntimeException. (str "Configuration file not found: " f)))
-                  (read-string (slurp rsrc)))]
-       (intern 'shtrom.client 'host (:host conf))
-       (intern 'shtrom.client 'port (:port conf))
-       (intern 'shtrom.client 'uri-root (str "http://" (:host conf) ":" (:port conf))))))
+   (config/load-config f)
+   (when-not @connection-manager
+     (reset! connection-manager
+             (if config/connection
+               (manager/make-reusable-conn-manager config/connection)
+               (manager/make-reusable-conn-manager {}))))
+   nil))
+
+(defn shtrom-destroy
+  []
+  (when @connection-manager
+    (manager/shutdown-manager @connection-manager)
+    (reset! connection-manager nil))
+  nil)
 
 (defn hist-uri
   ([key]
-     (format "%s/%s" uri-root key))
+   (format "%s/%s" config/uri-root key))
   ([key ref bin-size]
-   (format "%s/%s/%s/%d" uri-root key ref bin-size)))
+   (format "%s/%s/%s/%d" config/uri-root key ref bin-size)))
 
 (defmacro wrap-error
   [& f]
@@ -58,7 +66,8 @@
                            {:query-params {:start (validate-position start)
                                            :end (validate-position end)}
                             :as :byte-array
-                            :accept :byte-array})
+                            :accept :byte-array
+                            :connection-manager @connection-manager})
            len (alength (:body res))
            bb (when res
                 (ByteBuffer/wrap (:body res)))
@@ -67,7 +76,7 @@
            values (map (fn [_] (.getInt bb))
                        (range (quot (- len 16) 4)))]
        [left right values]))
-    (catch java.net.ConnectException e
+    (catch java.io.IOException e
       (logging/error "Lost shtrom connection")
       nil)
     (catch Exception e [0 0 (list)])))
@@ -86,8 +95,9 @@
       (wrap-error
        (client/post (hist-uri key ref bin-size)
                     {:body (.array bb)
-                     :content-type "application/octet-stream"}))
-      (catch java.net.ConnectException e
+                     :content-type "application/octet-stream"
+                     :connection-manager @connection-manager}))
+      (catch java.io.IOException e
         (logging/error "Lost shtrom connection")
         nil))
     nil))
@@ -97,28 +107,32 @@
   (try
     (wrap-error
      (let [res (client/post (str (hist-uri key ref bin-size) "/reduction")
-                            {:throw-exceptions false})]
+                            {:throw-exceptions false
+                             :connection-manager @connection-manager})]
        (cond
          (= (:status res) 404) (throw (RuntimeException. (format "Invalid key, ref or bin-size: %s %s %d" key ref bin-size))))))
-    (catch java.net.ConnectException e
+    (catch java.io.IOException e
       (logging/error "Lost shtrom connection")))
   nil)
 
 (defn create-bucket!
   [key]
   (wrap-error
-   (client/post (hist-uri key))))
+   (client/post (hist-uri key)
+                {:connection-manager @connection-manager})))
 
 (defn build-bucket!
   [key]
   (wrap-error
-   (client/put (hist-uri key))))
+   (client/put (hist-uri key)
+               {:connection-manager @connection-manager})))
 
 (defn delete-hist
   [key]
   (try
     (wrap-error
-     (client/delete (hist-uri key)))
-    (catch java.net.ConnectException e
+     (client/delete (hist-uri key)
+                    {:connection-manager @connection-manager}))
+    (catch java.io.IOException e
       (logging/error "Lost shtrom connection")))
   nil)

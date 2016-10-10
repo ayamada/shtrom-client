@@ -3,10 +3,11 @@
             [shtrom.t-fixture :refer :all]
             [ring.adapter.jetty :as jetty]
             [clojure.java.io :as io]
-            [shtrom.config :as config]
+            [shtrom.config :as server-config]
             [shtrom.cache :as cache]
             [shtrom.handler :as handler]
-            [shtrom.client :as client]))
+            [shtrom.client :as client]
+            [shtrom.client.config :as config]))
 
 (defn concurrent-reduce
   [key refs bin-size initial-values]
@@ -24,9 +25,9 @@
 
 (defn- run-server! []
   (when-not @jetty-server
-    (config/load-config test-server-config-filename)
+    (server-config/load-config test-server-config-filename)
     (cache/prepare-cache!)
-    (let [options {:port client/port
+    (let [options {:port config/port
                    :join? false
                    :daemon? true}
           server (jetty/run-jetty #'shtrom.handler/app options)]
