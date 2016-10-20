@@ -66,7 +66,7 @@
   (require 'shtrom.client.perf :reload-all)
   (shtrom.client.perf/init!)
   (def k "perf-1")
-  (def ref-length 1000000)
+  (def ref-length 100000)
   (def refs-num 200)
   (shtrom.client.perf/prepare! k ref-length refs-num)
   (shtrom.client.perf/load! k ref-length refs-num)
