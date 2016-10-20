@@ -28,10 +28,16 @@
           (elapsed-time (dotimes [i refs-num]
                           (let [ref-name (str ref-name-prefix i)
                                 body (nth entries i)]
-                            (client/save-hist k ref-name bin-size body)
+                            (client/save-hist k ref-name bin-size body))))]
+      (println "Elapsed time(save-hist):" elapsed-time "msecs with" refs-num "refs")
+      (println "Elapsed time(save-hist):" (/ elapsed-time (float refs-num)) "msecs / 1 ref"))
+    (let [{:keys [ret elapsed-time]}
+          (elapsed-time (dotimes [i refs-num]
+                          (let [ref-name (str ref-name-prefix i)
+                                body (nth entries i)]
                             (client/reduce-hist k ref-name bin-size))))]
-      (println "Elapsed time:" elapsed-time "msecs with" refs-num "refs")
-      (println "Elapsed time:" (/ elapsed-time (float refs-num)) "msecs / 1 ref"))
+      (println "Elapsed time(reduce-hist):" elapsed-time "msecs with" refs-num "refs")
+      (println "Elapsed time(reduce-hist):" (/ elapsed-time (float refs-num)) "msecs / 1 ref"))
     (client/build-bucket! k)
     k))
 
